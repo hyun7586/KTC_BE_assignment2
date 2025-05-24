@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.assignment2.level_0to2.domain.Schedule;
 import org.example.assignment2.level_0to2.dto.ScheduleRequest;
+import org.example.assignment2.level_0to2.dto.ScheduleResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -27,24 +28,23 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
 
   @Override
-  public Schedule findById(Long scheduleId) {
+  public ScheduleResponse findById(Long scheduleId) {
     String sql = "SELECT * FROM schedule WHERE id = " + scheduleId;
     return template.queryForObject(sql, (rs, rowNum) -> {
-      Schedule schedule = Schedule.builder()
+      ScheduleResponse response = ScheduleResponse.builder()
           .id(rs.getLong("id"))
           .title(rs.getString("title"))
           .content(rs.getString("content"))
           .author(rs.getString("author"))
-          .password(rs.getString("password"))
           .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
           .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
           .build();
-      return schedule;
+      return response;
     });
   }
 
   @Override
-  public List<Schedule> findAll(ScheduleRequest request) {
+  public List<ScheduleResponse> findAll(ScheduleRequest request) {
     String ssql = "SELECT * FROM schedule ";
     List<String> conditions = new ArrayList<>();
 
@@ -71,11 +71,10 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
     return template.query(ssql,
         (rs, rowNum) ->
-            Schedule.builder()
+            ScheduleResponse.builder()
                 .id(rs.getLong("id"))
                 .title(rs.getString("title"))
                 .content(rs.getString("content"))
-                .password(rs.getString("password"))
                 .author(rs.getString("author"))
                 .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
                 .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
@@ -83,7 +82,7 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
   }
 
   @Override
-  public Schedule save(ScheduleRequest request) {
+  public ScheduleResponse save(ScheduleRequest request) {
     String sql = "INSERT INTO schedule (title, content, author, password, created_at, updated_at)"
         + " VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -106,12 +105,11 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
     // argument로 받아온 schedule의 정보를 통해 return 객체 작성
     // created_at, updated_at 정보는 미리 만들어놓은 변수를 이용
-    return Schedule.builder()
+    return ScheduleResponse.builder()
         .id(generatedId)
         .title(request.getTitle())
         .content(request.getContent())
         .author(request.getAuthor())
-        .password(request.getPassword())
         .createdAt(now)
         .updatedAt(now)
         .build();
