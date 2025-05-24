@@ -9,6 +9,10 @@
 ---
 
 ### API 명세서
+
+Response code:
+- 정상 처리: 200
+- Path parameter 오류, 비밀번호 오류, 기타 오류: 400
 ![0524204608565970](https://github.com/user-attachments/assets/57fea5d7-e81b-4cff-9a40-1b32b3a91f5d)
 notion 주소: https://positive-woolen-1a2.notion.site/2-1fb8835a509080858245dae0ca99243b?pvs=4
 
