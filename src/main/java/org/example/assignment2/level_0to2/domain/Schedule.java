@@ -2,6 +2,7 @@ package org.example.assignment2.level_0to2.domain;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class Schedule {
   private String content;
   private String author;
   private String password;
-  private LocalDate createdAt;
-  private LocalDate updatedAt;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 
 }

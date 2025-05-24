@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.assignment2.level_0to2.dto.ScheduleRequest;
 import org.example.assignment2.level_0to2.dto.ScheduleResponse;
 import org.example.assignment2.level_0to2.service.ScheduleService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +27,10 @@ public class ScheduleApiController {
 
   // schedule list 조회
   @GetMapping("/list")
-  public ResponseEntity<?> getScheduleList(){
-    List<ScheduleResponse> list = scheduleService.getScheduleList();
+  public ResponseEntity<?> getScheduleList(
+      @RequestBody ScheduleRequest request
+  ){
+    List<ScheduleResponse> list = scheduleService.getScheduleList(request);
 
     return ResponseEntity.ok(list);
   }
@@ -72,7 +75,12 @@ public class ScheduleApiController {
       @PathVariable(name="schedule_id") Long scheduleId,
       @RequestBody ScheduleRequest request
   ){
-    scheduleService.deleteSchedule(scheduleId, request);
+    try {
+      scheduleService.deleteSchedule(scheduleId, request);
+    } catch(Exception e){
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("잘못된 요청입니다");
+    }
 
     return ResponseEntity.ok("the schedule is successfully deleted");
   }
