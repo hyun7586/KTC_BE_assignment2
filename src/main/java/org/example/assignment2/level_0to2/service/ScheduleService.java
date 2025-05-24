@@ -18,29 +18,23 @@ public class ScheduleService {
 
   // schedule list 조회
   public List<ScheduleResponse> getScheduleList(ScheduleRequest request) {
-    return repository.findAll(request).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return repository.findAll(request);
   }
 
   // 단일 schedule 조회
   public ScheduleResponse getSchedule(Long scheduleId) {
-    Schedule schedule = repository.findById(scheduleId);
-    return mapper.toResponse(schedule);
+    return repository.findById(scheduleId);
   }
 
   // schedule 생성
   public ScheduleResponse createSchedule(ScheduleRequest request) {
-    Schedule result = repository.save(request);
-    return mapper.toResponse(result);
+    return repository.save(request);
   }
 
   // schedule 수정
   public ScheduleResponse updateSchedule(Long scheduleId, ScheduleRequest request) {
     Long updatedId = repository.update(scheduleId, request);
-    Schedule schedule = repository.findById(updatedId);
-
-    return mapper.toResponse(schedule);
+    return repository.findById(updatedId);
   }
 
   // schedule 삭제

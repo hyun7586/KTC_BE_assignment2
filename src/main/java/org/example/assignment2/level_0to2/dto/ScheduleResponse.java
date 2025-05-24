@@ -11,7 +11,7 @@ import lombok.Setter;
 @Builder
 public class ScheduleResponse {
 
-  private String title;
+  private Long id;
   private String content;
   private String author;
   private LocalDateTime createdAt;

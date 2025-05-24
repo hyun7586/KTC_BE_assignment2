@@ -38,9 +38,7 @@ public class ScheduleApiController {
   // 단일 schedule 조회
   @GetMapping("/{schedule_id}")
   public ResponseEntity<?> getSchedule(
-      @PathVariable(name="schedule_id") Long scheduleId,
-      @RequestParam(name="author", required = false) String author,
-      @RequestParam(name="updated_at", required = false)LocalDateTime updatedAt
+      @PathVariable(name="schedule_id") Long scheduleId
   ){
     // author, updatedAt 기준 조회도 구현
     ScheduleResponse result = scheduleService.getSchedule(scheduleId);

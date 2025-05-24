@@ -8,7 +8,6 @@ public class ScheduleMapper {
 
   public ScheduleResponse toResponse(Schedule entity){
     return ScheduleResponse.builder()
-        .title(entity.getTitle())
         .content(entity.getContent())
         .author(entity.getAuthor())
         .createdAt(entity.getCreatedAt())
@@ -19,7 +18,6 @@ public class ScheduleMapper {
   // date는 어떻게 처리?
   public Schedule toEntity(ScheduleRequest request){
     return Schedule.builder()
-        .title(request.getTitle())
         .content(request.getContent())
         .author(request.getAuthor())
         .password(request.getPassword())

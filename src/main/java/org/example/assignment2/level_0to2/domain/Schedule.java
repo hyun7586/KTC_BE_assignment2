@@ -17,7 +17,6 @@ import lombok.Setter;
 public class Schedule {
 
   private Long id;
-  private String title;
   private String content;
   private String author;
   private String password;
