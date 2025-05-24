@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.example.assignment2.level_0to2.domain.Schedule;
 import org.example.assignment2.level_0to2.dto.ScheduleRequest;
 import org.example.assignment2.level_0to2.dto.ScheduleResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,12 +30,12 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
   public ScheduleResponse findById(Long scheduleId) {
     String sql = "SELECT * FROM schedule WHERE id = " + scheduleId;
     return template.queryForObject(sql, (rs, rowNum) -> ScheduleResponse.builder()
-          .id(rs.getLong("id"))
-          .content(rs.getString("content"))
-          .author(rs.getString("author"))
-          .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
-          .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
-          .build());
+        .id(rs.getLong("id"))
+        .content(rs.getString("content"))
+        .author(rs.getString("author"))
+        .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
+        .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
+        .build());
   }
 
   @Override
@@ -44,26 +43,27 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     String ssql = "SELECT * FROM schedule ";
     List<String> conditions = new ArrayList<>();
 
-    if(request.getAuthor()!=null){
-      conditions.add("author = "+request.getAuthor()+" ");
+    if (request.getAuthor() != null) {
+      conditions.add("author = " + request.getAuthor() + " ");
     }
 
-    if(request.getDate()!=null){
-      conditions.add("updated_at >= '"+request.getDate()+" 00:00:00' ");
+    if (request.getDate() != null) {
+      conditions.add("updated_at >= '" + request.getDate() + " 00:00:00' AND updated_at < '"
+          + request.getDate().plusDays(1) + " 00:00:00' ");
     }
 
-    if(!conditions.isEmpty()){
-      ssql+="WHERE ";
-      ssql+=conditions.get(0)+" ";
+    if (!conditions.isEmpty()) {
+      ssql += "WHERE ";
+      ssql += conditions.get(0) + " ";
 
-      if(conditions.size()==2){
-        ssql+="AND "+conditions.get(1)+" ";
+      if (conditions.size() == 2) {
+        ssql += "AND " + conditions.get(1) + " ";
       }
 
-      ssql+="ORDER BY updated_at DESC";
+      ssql += "ORDER BY updated_at DESC";
     }
 
-    log.info("sql query: "+ssql);
+    log.info("sql query: " + ssql);
 
     return template.query(ssql,
         (rs, rowNum) ->
