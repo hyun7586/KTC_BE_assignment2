@@ -41,7 +41,14 @@ public class ScheduleApiController {
       @PathVariable(name="schedule_id") Long scheduleId
   ){
     // author, updatedAt 기준 조회도 구현
-    ScheduleResponse result = scheduleService.getSchedule(scheduleId);
+    ScheduleResponse result;
+
+    try {
+      result = scheduleService.getSchedule(scheduleId);
+    }catch(Exception e){
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("잘못된 요청입니다");
+    }
 
     return ResponseEntity.ok(result);
   }
@@ -62,7 +69,13 @@ public class ScheduleApiController {
       @PathVariable(name="schedule_id") Long scheduleId,
       @RequestBody ScheduleRequest request
   ){
-    ScheduleResponse result = scheduleService.updateSchedule(scheduleId, request);
+    ScheduleResponse result;
+    try {
+      result = scheduleService.updateSchedule(scheduleId, request);
+    } catch(Exception e){
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("잘못된 요청입니다");
+    }
 
     return ResponseEntity.ok(result);
   }
