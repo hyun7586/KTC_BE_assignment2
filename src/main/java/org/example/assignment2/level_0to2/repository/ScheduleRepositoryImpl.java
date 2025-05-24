@@ -60,8 +60,9 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         ssql += "AND " + conditions.get(1) + " ";
       }
 
-      ssql += "ORDER BY updated_at DESC";
     }
+
+    ssql += "ORDER BY updated_at DESC";
 
     log.info("sql query: " + ssql);
 
