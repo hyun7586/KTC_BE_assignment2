@@ -1,47 +1,154 @@
 package org.example.assignment2.level_0to2.repository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.assignment2.level_0to2.domain.Schedule;
+import org.example.assignment2.level_0to2.dto.ScheduleRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Slf4j
 public class ScheduleRepositoryImpl implements ScheduleRepository {
 
   private final JdbcTemplate template;
 
-  public ScheduleRepositoryImpl(DataSource dataSource){
-    this.template=new JdbcTemplate(dataSource);
+  public ScheduleRepositoryImpl(DataSource dataSource) {
+    this.template = new JdbcTemplate(dataSource);
   }
 
 
   @Override
   public Schedule findById(Long scheduleId) {
-    String sql = "SELECT * FROM schedule WHERE id = ?";
-
-
-    return null;
+    String sql = "SELECT * FROM schedule WHERE id = " + scheduleId;
+    return template.queryForObject(sql, (rs, rowNum) -> {
+      Schedule schedule = Schedule.builder()
+          .id(rs.getLong("id"))
+          .title(rs.getString("title"))
+          .content(rs.getString("content"))
+          .author(rs.getString("author"))
+          .password(rs.getString("password"))
+          .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
+          .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
+          .build();
+      return schedule;
+    });
   }
 
   @Override
-  public List<Schedule> findAll() {
-    return null;
+  public List<Schedule> findAll(ScheduleRequest request) {
+    String ssql = "SELECT * FROM schedule ";
+    List<String> conditions = new ArrayList<>();
+
+    if(request.getAuthor()!=null){
+      conditions.add("author = "+request.getAuthor()+" ");
+    }
+
+    if(request.getDate()!=null){
+      conditions.add("updated_at >= '"+request.getDate()+" 00:00:00' ");
+    }
+
+    if(!conditions.isEmpty()){
+      ssql+="WHERE ";
+      ssql+=conditions.get(0)+" ";
+
+      if(conditions.size()==2){
+        ssql+="AND "+conditions.get(1)+" ";
+      }
+
+      ssql+="ORDER BY updated_at DESC";
+    }
+
+    log.info("sql query: "+ssql);
+
+    return template.query(ssql,
+        (rs, rowNum) ->
+            Schedule.builder()
+                .id(rs.getLong("id"))
+                .title(rs.getString("title"))
+                .content(rs.getString("content"))
+                .password(rs.getString("password"))
+                .author(rs.getString("author"))
+                .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
+                .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
+                .build());
   }
 
   @Override
-  public Schedule save(Schedule schedule) {
-    return null;
+  public Schedule save(ScheduleRequest request) {
+    String sql = "INSERT INTO schedule (title, content, author, password, created_at, updated_at)"
+        + " VALUES (?, ?, ?, ?, ?, ?)";
+
+    KeyHolder keyHolder = new GeneratedKeyHolder();
+    LocalDateTime now = LocalDateTime.now();
+
+    template.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      ps.setString(1, request.getTitle());
+      ps.setString(2, request.getContent());
+      ps.setString(3, request.getAuthor());
+      ps.setString(4, request.getPassword());
+      ps.setTimestamp(5, Timestamp.valueOf(now));
+      ps.setTimestamp(6, Timestamp.valueOf(now));
+      return ps;
+    }, keyHolder);
+
+    // 자동 생성된 ID 추출
+    Long generatedId = keyHolder.getKey().longValue();
+
+    // argument로 받아온 schedule의 정보를 통해 return 객체 작성
+    // created_at, updated_at 정보는 미리 만들어놓은 변수를 이용
+    return Schedule.builder()
+        .id(generatedId)
+        .title(request.getTitle())
+        .content(request.getContent())
+        .author(request.getAuthor())
+        .password(request.getPassword())
+        .createdAt(now)
+        .updatedAt(now)
+        .build();
+  }
+
+  // 현재는 schedule에 author, content가 모두 수정할 값으로 들어온다고 가정
+  // 나중에 author, title 중 제시된 값만 수정하도록 하는 로직 구현해야 함
+  // 수정된 레코드의 id만 리턴
+  @Override
+  public Long update(Long scheduleId, ScheduleRequest request) {
+    String sql = "UPDATE schedule SET author = ?, content = ?, updated_at = ? WHERE id = ? AND "
+        + "password = ?";
+    LocalDateTime now = LocalDateTime.now();
+
+    int updated = template.update(sql,
+        request.getAuthor(),
+        request.getContent(),
+        now,
+        scheduleId,
+        request.getPassword()
+    );
+
+    if (updated == 0) {
+      throw new IllegalArgumentException("비밀번호가 일치하지 않거나 일정이 존재하지 않습니다");
+    }
+
+    return scheduleId;
   }
 
   @Override
-  public Schedule update(Long scheduleId, Schedule schedule) {
-    return null;
-  }
+  public void deleteById(Long scheduleId, String password) {
+    String sql = "DELETE FROM schedule WHERE id = ? AND password = ?";
+    int deleted = template.update(sql, scheduleId, password);
 
-  @Override
-  public void deleteById(Long scheduleId) {
-
+    // query로 영향을 받은 수가 0이라면? 삭제가 되지 않은 것
+    if (deleted == 0) {
+      throw new IllegalArgumentException("비밀번호가 일치하지 않거나 일정이 존재하지 않습니다.");
+    }
   }
 }
