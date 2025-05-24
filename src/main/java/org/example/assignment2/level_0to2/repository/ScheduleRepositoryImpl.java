@@ -30,17 +30,13 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
   @Override
   public ScheduleResponse findById(Long scheduleId) {
     String sql = "SELECT * FROM schedule WHERE id = " + scheduleId;
-    return template.queryForObject(sql, (rs, rowNum) -> {
-      ScheduleResponse response = ScheduleResponse.builder()
+    return template.queryForObject(sql, (rs, rowNum) -> ScheduleResponse.builder()
           .id(rs.getLong("id"))
-          .title(rs.getString("title"))
           .content(rs.getString("content"))
           .author(rs.getString("author"))
           .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
           .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
-          .build();
-      return response;
-    });
+          .build());
   }
 
   @Override
@@ -73,7 +69,6 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         (rs, rowNum) ->
             ScheduleResponse.builder()
                 .id(rs.getLong("id"))
-                .title(rs.getString("title"))
                 .content(rs.getString("content"))
                 .author(rs.getString("author"))
                 .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
@@ -83,31 +78,27 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 
   @Override
   public ScheduleResponse save(ScheduleRequest request) {
-    String sql = "INSERT INTO schedule (title, content, author, password, created_at, updated_at)"
-        + " VALUES (?, ?, ?, ?, ?, ?)";
+    String sql = "INSERT INTO schedule (content, author, password, created_at, updated_at)"
+        + " VALUES (?, ?, ?, ?, ?)";
 
     KeyHolder keyHolder = new GeneratedKeyHolder();
     LocalDateTime now = LocalDateTime.now();
 
     template.update(connection -> {
       PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-      ps.setString(1, request.getTitle());
-      ps.setString(2, request.getContent());
-      ps.setString(3, request.getAuthor());
-      ps.setString(4, request.getPassword());
+      ps.setString(1, request.getContent());
+      ps.setString(2, request.getAuthor());
+      ps.setString(3, request.getPassword());
+      ps.setTimestamp(4, Timestamp.valueOf(now));
       ps.setTimestamp(5, Timestamp.valueOf(now));
-      ps.setTimestamp(6, Timestamp.valueOf(now));
       return ps;
     }, keyHolder);
 
     // 자동 생성된 ID 추출
     Long generatedId = keyHolder.getKey().longValue();
 
-    // argument로 받아온 schedule의 정보를 통해 return 객체 작성
-    // created_at, updated_at 정보는 미리 만들어놓은 변수를 이용
     return ScheduleResponse.builder()
         .id(generatedId)
-        .title(request.getTitle())
         .content(request.getContent())
         .author(request.getAuthor())
         .createdAt(now)
@@ -115,9 +106,7 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         .build();
   }
 
-  // 현재는 schedule에 author, content가 모두 수정할 값으로 들어온다고 가정
-  // 나중에 author, title 중 제시된 값만 수정하도록 하는 로직 구현해야 함
-  // 수정된 레코드의 id만 리턴
+  // 수정된 레코드의 id만 리턴 -> service 계층에서 다시 findById() 호출하면서 수정된 레코드 조회
   @Override
   public Long update(Long scheduleId, ScheduleRequest request) {
     String sql = "UPDATE schedule SET author = ?, content = ?, updated_at = ? WHERE id = ? AND "
