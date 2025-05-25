@@ -1,1 +1,1 @@
-issue sync test
+ issue completion test
